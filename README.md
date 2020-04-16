@@ -9,3 +9,4 @@ Webotron currently has the following features:
 
 - List buckets
 - List contents of buckets
+- Sync directory with S3 Bucket

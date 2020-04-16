@@ -1,3 +1,15 @@
+#!/usr/bin/python
+
+# -*- coding: utf-8 -*-
+
+"""Webotron automates process of deploying static websites to aws
+- Configure AWS S3 buckets
+    - Create them
+    - Set them up
+    - Deploy local files to them
+- Configure DNS with AWS Route 53
+- Configure a Content Delivery Network and SSL with AWS"""
+
 import boto3
 import sys
 import click
@@ -6,32 +18,36 @@ import mimetypes
 from botocore.exceptions import ClientError
 from pathlib import Path
 
-session = boto3.Session(profile_name="Liam",region_name="us-east-1")
+session = boto3.Session(profile_name="Liam", region_name="us-east-1")
 s3 = session.resource("s3")
+
 
 @click.group()
 def cli():
-    "Webotron deploys websites to AWS"
+    '''Webotron deploys websites to AWS'''
     pass
+
 
 @cli.command("list-buckets")
 def list_buckets():
-    "List all s3 buckets"
+    '''List all s3 buckets'''
     for bucket in s3.buckets.all():
         print(bucket)
+
 
 @cli.command("list-bucket-objects")
 @click.argument('bucket')
 def list_bucket_objects(bucket):
-    "List objects in an s3 bucket"
+    '''List objects in an s3 bucket'''
     for obj in s3.Bucket(name=bucket).objects.all():
         print(obj)
     pass
 
+
 @cli.command("setup-bucket")
 @click.argument("bucket")
 def setup_bucket(bucket):
-    "Create and configure S3 bucket"
+    '''Create and configure S3 bucket'''
     s3_bucket = None
 
     try:
@@ -60,12 +76,13 @@ def setup_bucket(bucket):
     ws = s3_bucket.Website()
     ws.put(WebsiteConfiguration={
         'ErrorDocument': {
-            'Key': 'error.html' },
+            'Key': 'error.html'},
         'IndexDocument': {
             'Suffix': 'index.html'}})
-    return
 
-def upload_file(s3_bucket,path,key):
+
+def upload_file(s3_bucket, path, key):
+    '''uploade file to s3 bucket'''
     content_type = mimetypes.guess_type(key)[0] or "text/plain"
     s3_bucket.upload_file(
         path,
@@ -73,11 +90,12 @@ def upload_file(s3_bucket,path,key):
         ExtraArgs={
             "ContentType": content_type
         })
-    return
+
+
 @cli.command('sync')
-@click.argument('pathname',type=click.Path(exists=True))
+@click.argument('pathname', type=click.Path(exists=True))
 @click.argument('bucket')
-def sync(pathname,bucket):
+def sync(pathname, bucket):
     "Sync contents of PATHNAME to BUCKET"
     s3_bucket = s3.Bucket(bucket)
 
@@ -88,9 +106,10 @@ def sync(pathname,bucket):
             if p.is_dir():
                 handle_directory(p)
             elif p.is_file():
-                upload_file(s3_bucket,str(p),str(p.relative_to(root)))
+                upload_file(s3_bucket, str(p), str(p.relative_to(root)))
 
     handle_directory(root)
-    #url = "https://%s.s3-website.us-east-1.amazonaws.com" % new_bucket.name
+
+
 if __name__ == "__main__":
     cli()
