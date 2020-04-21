@@ -10,3 +10,4 @@ Webotron currently has the following features:
 - List buckets
 - List contents of buckets
 - Sync directory with S3 Bucket
+- Set AWS profile with --profile=<profileName>
