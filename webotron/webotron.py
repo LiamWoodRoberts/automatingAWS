@@ -15,13 +15,13 @@ import sys
 import click
 
 from pathlib import Path
-from bucket import BucketManager
+from webotron.bucket import BucketManager
 
 session= None
 bucket_manager = None
 
 @click.group()
-@click.option('--profile',default=None,help = "Use a given AWS profule.")
+@click.option('--profile',default=None,help = "Use a given AWS profile.")
 def cli(profile):
     '''Webotron deploys websites to AWS'''
     global session,bucket_manager
@@ -63,7 +63,7 @@ def setup_bucket(bucket_name):
 def sync(pathname, bucket_name):
     "Sync contents of PATHNAME to BUCKET"
     bucket_manager.sync(bucket_name,pathname)
-
+    print(bucket_manager.get_bucket_url(bucket_manager.s3.Bucket(bucket_name)))
 
 if __name__ == "__main__":
     cli()

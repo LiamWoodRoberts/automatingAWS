@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import mimetypes
+from webotron import util
+
 from pathlib import Path
 from botocore.exceptions import ClientError
 
@@ -13,6 +15,17 @@ class BucketManager:
         '''Create a BucketManager object.'''
         self.session = session
         self.s3 = self.session.resource('s3')
+
+
+    def get_region_name(self,bucket):
+        '''Get the bucket's region name.'''
+        bucket_location = self.s3.meta.client.get_bucket_location(Bucket=bucket.name)
+        return bucket_location["LocationConstraint"] or 'us-east-1'
+
+
+    def get_bucket_url(self,bucket):
+        '''get the website url for this bucket.'''
+        return f"http://{bucket.name}.{util.get_endpoint(self.get_region_name(bucket)).host}"
 
 
     def all_buckets(self):
